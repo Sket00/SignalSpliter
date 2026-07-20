@@ -196,7 +196,6 @@ def main():
                 display.show(image)
 
                 if current_owner != current_led:
-                    log.info(f"[LED] State changed from '{current_led}' to '{current_owner}'")
                     current_led = current_owner
                     if current_owner is None or current_owner == "FREE":
                         encoder.set_color(0, 0, 0)
