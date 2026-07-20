@@ -248,6 +248,7 @@ SignalSpliter/
 │   ├── lock_manager.py       # local/remote access lock (thread-safe)
 │   ├── logger.py             # logging configuration (tagged [ROUTE]/[LOCK]/[RUNTIME], daily rotation)
 │   └── runtime_tracker.py    # persistent, crash-safe total-runtime counter
+├── Assets/                   # icons, fonts
 ├── config.txt                # target /boot/firmware/config.txt
 ├── signalspliter.service     # systemd unit
 ├── 40-rpi-volatile-storage.conf  # journald drop-in
