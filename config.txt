@@ -34,7 +34,6 @@ disable_overscan=1
 
 dtoverlay=spi1-1cs
 
-# Bluetooth WYŁĄCZONY: nieużywany w projekcie, zwalnia UART i usuwa kolejny
 dtoverlay=disable-bt
 
 # Run as fast as firmware / board allows
