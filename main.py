@@ -147,7 +147,6 @@ def main():
                 last_activity_time = now
 
             if diff != 0:
-                log.debug(f"[ENCODER] Movement detected: {diff}, lock owner before action: {current_owner}")
                 for _ in range(abs(diff)):
                     if diff > 0: gui.encoder_right(lock)
                     else: gui.encoder_left(lock)
