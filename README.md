@@ -133,7 +133,7 @@ Before wiring this up as a systemd service, run it manually once to confirm the 
 
 ```bash
 source env/bin/activate     # if not already active from the steps above
-python3 mwain.py
+python3 main.py
 ```
 
 ## 4. 24/7 Stability Configuration
@@ -230,7 +230,7 @@ Raspberry Pi OS forces `Storage=volatile` via its own file under `/usr/lib/syste
 
 ```
 SignalSpliter/
-├── mwain.py                  # main entry point, application loop + watchdog
+├── main.py                  # main entry point, application loop + watchdog
 ├── Config/
 │   └── settings.py           # configuration (screen dimensions, orientation, paths)
 ├── Display/
