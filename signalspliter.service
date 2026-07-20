@@ -1,0 +1,19 @@
+[Unit]
+Description=SignalSpliter - 2x16 signal routing controller
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+WatchdogSec=15
+ExecStart=/home/admin/SignalSpliter/env/bin/python3 /home/admin/SignalSpliter/mwain.py
+WorkingDirectory=/home/admin/SignalSpliter
+Restart=always
+RestartSec=3
+User=admin
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

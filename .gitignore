@@ -1,0 +1,14 @@
+*.log
+*.log.*
+runtime.json
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

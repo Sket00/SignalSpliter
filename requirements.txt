@@ -1,0 +1,7 @@
+spidev
+numpy
+Pillow
+gpiozero
+sparkfun-qwiic-twist
+asyncua
+sdnotify
