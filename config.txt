@@ -15,7 +15,6 @@ dtparam=audio=off
 camera_auto_detect=0
 
 # Automatically load overlays for detected DSI displays
-# osobnego wyświetlacza SPI (jd9853), nie DSI.
 display_auto_detect=0
 
 # Automatically load initramfs files, if found
@@ -36,7 +35,6 @@ disable_overscan=1
 dtoverlay=spi1-1cs
 
 # Bluetooth WYŁĄCZONY: nieużywany w projekcie, zwalnia UART i usuwa kolejny
-# kontroler generujący przerwania w tle (hci_uart_bcm w logach).
 dtoverlay=disable-bt
 
 # Run as fast as firmware / board allows
