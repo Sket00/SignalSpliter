@@ -1,6 +1,7 @@
 # SignalSpliter
 
 A 2×16 signal routing controller (2 inputs, 16 outputs) built on a Raspberry Pi Zero W (v1), with a physical rotary encoder, an IPS LCD display, and remote control via OPC UA.
+Based on the project https://github.com/Luk9091/SignalSpliter by Łukasz Przystupa
 
 ## Table of Contents
 
