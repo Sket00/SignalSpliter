@@ -67,6 +67,9 @@ class EncoderHandler:
             self.refresh_counter = 0
             try:
                 self.twist.set_color(self.target_r, self.target_g, self.target_b)
+                self.target_r = 0
+                self.target_g = 0
+                self.target_b = 0
             except OSError:
                 pass
 
