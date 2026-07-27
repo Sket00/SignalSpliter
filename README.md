@@ -15,6 +15,13 @@ Based on the project https://github.com/Luk9091/SignalSpliter by Łukasz Przystu
 - [4. 24/7 Stability Configuration](#4-247-stability-configuration)
 - [5. Running as a systemd Service](#5-running-as-a-systemd-service)
 - [6. Verification and Diagnostics](#6-verification-and-diagnostics)
+- [Usage](#usage)
+  - [Status Bar](#status-bar)
+  - [Main Screens](#main-screens)
+  - [Settings Options](#settings-options)
+  - [Screensaver](#screensaver)
+  - [Access Control (Lock) State Machine](#access-control-lock-state-machine)
+  - [Offline / Online Clock Behaviour](#offline--online-clock-behaviour)
 - [Known Issues and Their Resolutions](#known-issues-and-their-resolutions)
 - [Project Structure](#project-structure)
 
@@ -203,6 +210,87 @@ Total device runtime is also available without touching the logs - as `Total_Run
 
 ---
 
+## Usage
+
+### Status Bar
+
+Shown at the top of every screen (except the screensaver):
+
+```
+● LOCAL          192.168.1.50          42.5°C
+```
+
+- **Left** — a coloured dot + text showing the current lock owner: `FREE` (grey), `LOCAL` (green), or a remote client identifier (blue).
+- **Center** — the device's current IP address, or `OFFLINE` if none is assigned. This is the address to use when connecting an OPC UA client (`opc.tcp://<IP>:4840/freeopcua/server/`). Cached for 15s, does not require internet access — any LAN address is sufficient.
+- **Right** — CPU temperature, refreshed every 2s.
+
+### Main Screens
+
+| Screen | Purpose |
+|---|---|
+| **Menu** | Two large tiles showing IN1/IN2 current output, plus a bottom dock to enter Routing or Settings. |
+| **Routing** | Tabs for IN1 / IN2; selecting one opens the 16-output grid. |
+| **Routing Grid** | Pick an output (1-16) for the active input. The output already used by the *other* input is shown greyed out (mutual exclusion). |
+| **Settings** | See below. |
+| **Color Select** | Pick a highlight colour for IN1 or IN2 from a fixed palette. |
+
+### Settings Options
+
+| Item | Effect | Requires lock? |
+|---|---|---|
+| Release Lock | Releases the lock if held locally | No |
+| Priority: LOCAL/REMOTE | Toggles whether the local encoder is allowed to steal the lock from a remote OPC client (see state diagram below) | No |
+| IN1 / IN2 Color | Opens the colour picker for that input's highlight colour | Yes |
+| Switch to Dark/Light | Toggles the UI theme | No |
+| Set Time | Opens the manual clock editor (hour, then minute; click to confirm each field) - only meaningful while offline, see [Offline / Online Clock Behaviour](#offline--online-clock-behaviour) | No |
+| *Uptime: NNNh* (read-only) | Total device runtime, persisted across restarts | — |
+
+### Screensaver
+
+Activates after 45s of inactivity. Two variants exist in this repo (`gui_matrix.py` = bouncing icons, `gui_matrix_showcase.py` = the variant currently in use): three logos shown at once in fixed slots, cycling their arrangement every 4s via a smooth diagonal tile-wipe transition. Rotating the encoder or pressing the button exits the screensaver and returns to the previous screen.
+
+### Access Control (Lock) State Machine
+
+Both the physical encoder and OPC UA clients must hold the lock before changing routing. Only one owner at a time; a 30s inactivity timeout releases it automatically.
+
+```mermaid
+stateDiagram-v2
+    [*] --> FREE
+
+    FREE --> LOCAL_HELD: Local encoder action
+    FREE --> REMOTE_HELD: OPC RouteSignal() from client
+
+    LOCAL_HELD --> LOCAL_HELD: Another local action (refreshes 30s timer)
+    REMOTE_HELD --> REMOTE_HELD: Same client acts again (refreshes 30s timer)
+
+    LOCAL_HELD --> FREE: 30s inactivity timeout
+    REMOTE_HELD --> FREE: 30s inactivity timeout
+    LOCAL_HELD --> FREE: "Release Lock" (local menu)
+    REMOTE_HELD --> FREE: ReleaseLock() (same client)
+
+    REMOTE_HELD --> STEAL_PROMPT: Local user attempts an action\n(only if Priority = LOCAL)
+    STEAL_PROMPT --> LOCAL_HELD: Confirm "Yes, Steal Lock"
+    STEAL_PROMPT --> REMOTE_HELD: "No, Cancel"
+
+    REMOTE_HELD --> REMOTE_HELD: Local action attempted, Priority = REMOTE\n(warning shown, no state change)
+    LOCAL_HELD --> LOCAL_HELD: OPC client attempts action\n("Access Denied" reply, no state change)
+```
+
+**Key asymmetry:** only the local encoder can ever steal the lock (and only when `Priority = LOCAL`) — a remote OPC client can never steal; it always receives `Access Denied` if the lock is held by someone else. The `priority` flag is only ever consulted client-side in the GUI (`gui_matrix*.py`), never inside `opc_server.py`.
+
+### Offline / Online Clock Behaviour
+
+The Raspberry Pi Zero W has no battery-backed RTC, so without network access there is no reliable source of the current time.
+
+- **Online** (`Utils/network_info.get_ip()` returns an address): log timestamps use the OS clock directly, assumed to be NTP-synced automatically by Raspberry Pi OS.
+- **Offline, never set**: log lines show `--:--` instead of a fabricated/misleading time.
+- **Offline, manually set**: use Settings → "Set Time" once; the value is kept in memory as an offset from `time.monotonic()` for the rest of the session. It does **not** persist across restarts (no RTC to anchor it to) - this is an accepted trade-off, not an oversight.
+- If the device comes back online later in the same session, timestamps automatically switch back to the OS clock - no restart needed.
+
+**Known limitation:** this only affects the timestamp printed *inside* each log line (`[%(asctime)s] ...`). The **rotated log filenames** (`signal_spliter.log.YYYY-MM-DD`) are generated by Python's `TimedRotatingFileHandler`, which reads the raw OS clock directly and is not aware of `device_clock` - if the device boots offline with an unset/incorrect system date, a rotated file's *name* may not match the honest `--:--` timestamps found inside it. This was a deliberate scope decision (fixing it would require reimplementing log rotation) rather than an oversight.
+
+---
+
 ## Known Issues and Their Resolutions
 
 ### Kernel oops when running on the default SPI0 bus
@@ -248,7 +336,9 @@ SignalSpliter/
 ├── Utils/
 │   ├── lock_manager.py       # local/remote access lock (thread-safe)
 │   ├── logger.py             # logging configuration (tagged [ROUTE]/[LOCK]/[RUNTIME], daily rotation)
-│   └── runtime_tracker.py    # persistent, crash-safe total-runtime counter
+│   ├── runtime_tracker.py    # persistent, crash-safe total-runtime counter
+│   ├── device_clock.py       # best-effort clock for log timestamps (OS clock online, manual offline)
+│   └── network_info.py       # cached IP lookup, shared by the clock, logger and GUI
 ├── Assets/                   # icons, fonts
 ├── config.txt                # target /boot/firmware/config.txt
 ├── signalspliter.service     # systemd unit
