@@ -5,6 +5,7 @@ from logging.handlers import TimedRotatingFileHandler
 from collections import deque
 from Config import settings
 
+
 ## @class MemoryHandler
 #  @brief Custom logging handler that keeps the last N logs in memory.
 class MemoryHandler(logging.Handler):
@@ -16,12 +17,23 @@ class MemoryHandler(logging.Handler):
 
 memory_handler = MemoryHandler(10)
 
+
+## @class DeviceClockFormatter
+#  @brief Uses Utils.device_clock instead of the OS clock for timestamps.
+#  @details The Pi Zero W has no RTC. Without this, an offline device with an
+#           unsynced system clock would print a bogus, misleading timestamp
+#           (e.g. Jan 1970) instead of honestly showing that time is unknown.
+class DeviceClockFormatter(logging.Formatter):
+    def formatTime(self, record, datefmt=None):
+        from Utils.device_clock import now_str
+        return now_str()
+
 ## @brief Sets up the application logger with a size-unbounded but time-rotated
-#         log file
+#         log file.
 def setup_logger():
     logger = logging.getLogger("MatrixLogger")
     logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('[%(asctime)s] %(message)s', datefmt='%H:%M:%S')
+    formatter = DeviceClockFormatter('[%(asctime)s] %(message)s')
 
     file_handler = TimedRotatingFileHandler(
         settings.LOG_FILE,
