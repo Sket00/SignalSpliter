@@ -5,3 +5,4 @@ gpiozero
 sparkfun-qwiic-twist
 asyncua
 sdnotify
+smbus2
