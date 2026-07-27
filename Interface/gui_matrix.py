@@ -389,8 +389,8 @@ class MatrixGUI:
         if now - self.last_temp_time > 2.0:
             try:
                 with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
-                    self.last_cpu_temp = f"{float(f.read()) / 1000.0:.1f}Â°C"
-            except: self.last_cpu_temp = "42.5Â°C"
+                    self.last_cpu_temp = f"{float(f.read()) / 1000.0:.1f}°C"
+            except: self.last_cpu_temp = "42.5°C"
             self.last_temp_time = now
         return self.last_cpu_temp
 
