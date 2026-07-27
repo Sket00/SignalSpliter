@@ -247,7 +247,7 @@ Shown at the top of every screen (except the screensaver):
 
 ### Screensaver
 
-Activates after 45s of inactivity. Two variants exist in this repo (`gui_matrix.py` = bouncing icons, `gui_matrix_showcase.py` = the variant currently in use): three logos shown at once in fixed slots, cycling their arrangement every 4s via a smooth diagonal tile-wipe transition. Rotating the encoder or pressing the button exits the screensaver and returns to the previous screen.
+Activates after 45s of inactivity. Implemented in `gui_matrix.py`: three logos shown at once in fixed slots, cycling their arrangement every 4s via a smooth diagonal tile-wipe transition. Rotating the encoder or pressing the button exits the screensaver and returns to the previous screen.
 
 ### Access Control (Lock) State Machine
 
@@ -289,7 +289,7 @@ class REMOTE_HELD remote
 class STEAL_PROMPT prompt
 ```
 
-**Key asymmetry:** only the local encoder can ever steal the lock (and only when `Priority = LOCAL`) — a remote OPC client can never steal; it always receives `Access Denied` if the lock is held by someone else. The `priority` flag is only ever consulted client-side in the GUI (`gui_matrix*.py`), never inside `opc_server.py`.
+**Key asymmetry:** only the local encoder can ever steal the lock (and only when `Priority = LOCAL`) — a remote OPC client can never steal; it always receives `Access Denied` if the lock is held by someone else. The `priority` flag is only ever consulted client-side in the GUI (`gui_matrix.py`), never inside `opc_server.py`.
 
 ### Offline / Online Clock Behaviour
 
